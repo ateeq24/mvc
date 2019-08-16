@@ -31,7 +31,7 @@ if(!function_exists('env')) {
 }
 
 function load ($class) {
-    echo 'MVC - Including Class: ' . $class . "\n";
+    echo 'MVC - Including Class: ' . $class . "<br>\n";
 
     // project-specific namespace prefix
     $prefix = 'MVC';
@@ -60,7 +60,7 @@ function load ($class) {
     }
 };
 
-echo 'MVC - Initating Autoloader' . "\n";
+echo 'MVC - Initating Autoloader' . "<br>\n";
 $classes = array(
   'MVC\App\Controllers\StudentController',
   'MVC\App\Model\StudentModel',
@@ -86,4 +86,4 @@ $classes = array(
 foreach ($classes as $class) {
   load($class);
 }
-echo 'RT MVC - Autoloader Completed' . "\n";
+echo 'RT MVC - Autoloader Completed' . "<br>\n";

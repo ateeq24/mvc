@@ -5,9 +5,8 @@ namespace MVC\App\Model\Metadata;
  */
 class StudentMetdata
 {
-
-	function __construct(argument)
-	{
-
-	}
+	private $id;
+	private $name;
+	private $program;
+	private $semester;
 }
