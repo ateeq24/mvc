@@ -6,7 +6,7 @@ namespace MVC\App\Views\Layouts;
 class Ajax
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

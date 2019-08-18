@@ -6,7 +6,7 @@ namespace MVC\Core\Controllers;
 class ControllerInterface
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

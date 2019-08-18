@@ -3,10 +3,10 @@ namespace MVC\App\Views\Student;
 /**
  * Edit
  */
-class Edit
+class StudentEdit
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

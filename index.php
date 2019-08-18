@@ -1,4 +1,8 @@
 <?php
-set_include_path(__DIR__);
 require_once 'autoload.php';
-echo "URL: " . $_GET['url'];
+use MVC\Core\Models\Database\Database;
+
+echo "URL: " . $_GET['url'] . "<br>\n";
+
+$database = new Database();
+$database->connect();

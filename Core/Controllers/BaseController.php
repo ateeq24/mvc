@@ -6,7 +6,7 @@ namespace MVC\Core\Controllers;
 class BaseController
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

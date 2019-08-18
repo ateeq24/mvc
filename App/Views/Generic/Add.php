@@ -6,7 +6,7 @@ namespace MVC\App\Views\Generic;
 class Add
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

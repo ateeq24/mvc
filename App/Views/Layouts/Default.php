@@ -6,7 +6,7 @@ namespace MVC\App\Views\Student;
 class Default
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

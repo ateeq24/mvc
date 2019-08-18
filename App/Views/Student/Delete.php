@@ -3,10 +3,10 @@ namespace MVC\App\Views\Student;
 /**
  * Delete
  */
-class Delete
+class StudentDelete
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

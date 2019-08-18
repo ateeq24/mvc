@@ -6,7 +6,7 @@ namespace MVC\App\Controllers;
 class StudentController
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

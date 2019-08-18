@@ -3,10 +3,10 @@ namespace MVC\App\Views\Student;
 /**
  * List
  */
-class List
+class StudentList
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

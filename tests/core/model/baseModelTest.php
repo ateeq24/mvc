@@ -4,7 +4,7 @@ namespace MVC\Tests\Core\Model;
 class BaseModelTest
 {
 
-	function __construct(argument)
+	function __construct()
 	{
 
 	}

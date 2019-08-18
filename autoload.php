@@ -12,32 +12,14 @@
  * @param string $class The fully-qualified class name.
  * @return void
  */
-
-if(file_exists('./env.php')) {
-    include './env.php';
-}
-
-if(!function_exists('env')) {
-    function env($key, $default = null)
-    {
-        $value = getenv($key);
-
-        if ($value === false) {
-            return $default;
-        }
-
-        return $value;
-    }
-}
-
+require_once 'config.php';
 function load ($class) {
-    echo 'MVC - Including Class: ' . $class . "<br>\n";
 
     // project-specific namespace prefix
     $prefix = 'MVC';
 
     // base directory for the namespace prefix
-    $base_dir = dirname(dirname(__FILE__));
+    $base_dir = dirname(__FILE__);
 
     // does the class use the namespace prefix?
     $len = strlen($prefix);
@@ -56,7 +38,8 @@ function load ($class) {
 
     // if the file exists, require it
     if (file_exists($file)) {
-        require $file;
+        // echo 'MVC - Including Class: ' . $class . "<br>\n";
+        require_once $file;
     }
 };
 
@@ -79,7 +62,7 @@ $classes = array(
   'MVC\Core\Models\ModelFactory',
   'MVC\Core\Models\ModelInterface',
   'MVC\Core\Models\Database\Database',
-  'MVC\Core\Models\Database\Drivers\MySqli\MySQLDriver',
+  'MVC\Core\Models\Database\Drivers\Mysql\MysqlDriver',
   'MVC\Core\Views\ViewManager',
 );
 
