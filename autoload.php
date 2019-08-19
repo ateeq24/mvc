@@ -12,6 +12,10 @@
  * @param string $class The fully-qualified class name.
  * @return void
  */
+if(!file_exists('config.php'))
+  // Language to be included
+  throw new Exception("unable to find config.php", 1);
+  
 require_once 'config.php';
 function load ($class) {
 

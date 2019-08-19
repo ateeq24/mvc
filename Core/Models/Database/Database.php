@@ -10,16 +10,41 @@ use \Exception;
 */
 class Database
 {
+	/**
+	 * e.g. mysql, pgsql
+	 */
 	private $db_instance;
+
+	/**
+	 * e.g. database name
+	 */
 	private $db_name;
+
+	/**
+	 * e.g. localhost
+	 */
 	private $host;
     private $user;
     private $pass;
     private $port;
-    private $pdo;
+
+	/**
+	 * Driver class according to config.php
+	 */
+
     private $driver;
+	/**
+	 * PDO object which will be set by calling relevant driver
+	 */
+    private $pdo;
     private $charset;
 
+
+	/**
+	 * Constructor
+	 *
+	 * sets class variables from config
+	 */
 	function __construct()
 	{
 		$this->db_instance = $GLOBALS['env_config']['DB_INSTANCE'];
@@ -32,7 +57,7 @@ class Database
 	}
 
     /**
-    * Connects to the database
+    * Connects to the database through relevant driver
     *
     * @method connect
     * @return PDO object
@@ -42,12 +67,12 @@ class Database
 		if (!$this->getDriver()) {
 			return false;
 		}
-		$dbCon = new $this->driver();
-		$this->pdo = $dbCon->connect($this->host, $this->db_name, $this->user, $this->pass, $this->port, $this->charset);
+		// $dbCon = new $this->driver();
+		$this->pdo = $this->driver->connect($this->host, $this->db_name, $this->user, $this->pass, $this->port, $this->charset);
 	}
 
     /**
-    * Connects to the database
+    * Returns relevan griver according to config
     *
     * @method getDriver
     * @return boolean
@@ -68,12 +93,17 @@ class Database
 	}
 
     /**
-    * Select values from db
+    * Select values from db using relevant driver
     *
     * @method select
     * @return object etc. mysqli object after connection
     */
-	public function select()
+	public function select($table, $selecFields, $where = [], $orderby = [])
 	{
+		$select = $this->driver->select($table, $selecFields, $where, $orderby);
+		$stmt = $this->pdo->prepare($select);
+		$stmt->execute($where);
+		$user = $stmt->fetch();
+		echo( print_r($user, 1));
 	}
 }
