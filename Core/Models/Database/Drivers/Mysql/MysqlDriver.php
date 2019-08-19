@@ -10,16 +10,18 @@ namespace MVC\Core\Models\Database\Drivers\Mysql;
 class MysqlDriver
 {
 	function _construct() {}
-	public function connect($servername, $username, $password) {
-	    // Create connection
-	    $conn = new \mysqli($servername, $username, $password);
 
-	    // Check connection
-	    if ($conn->connect_error) {
-	    	// Language to be included
-	        die("Connection failed: " . $conn->connect_error);
-	    }
-	    // Language to be included
-	    echo "Connected successfully<br>\n";
+	public function connect( $host, $db, $user, $pass, $port = "3306", $charset= "utf8mb4") {
+		$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
+		$options = [
+		    \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
+		    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+		    \PDO::ATTR_EMULATE_PREPARES   => false,
+		];
+		try {
+		     $pdo = new \PDO($dsn, $user, $pass, $options);
+		} catch (\PDOException $e) {
+		     throw new \PDOException($e->getMessage(), (int)$e->getCode());
+		}
 	}
 }
