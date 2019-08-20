@@ -45,7 +45,7 @@ class Database
 	 *
 	 * sets class variables from config
 	 */
-	function __construct()
+	function __construct ()
 	{
 		$this->db_instance = $GLOBALS['env_config']['DB_INSTANCE'];
 		$this->db_name 	   = $GLOBALS['env_config']['DB_NAME'];
@@ -62,12 +62,11 @@ class Database
     * @method connect
     * @return PDO object
     */
-	public function connect()
+	public function connect ()
 	{
 		if (!$this->getDriver()) {
 			return false;
 		}
-		// $dbCon = new $this->driver();
 		$this->pdo = $this->driver->connect($this->host, $this->db_name, $this->user, $this->pass, $this->port, $this->charset);
 	}
 
@@ -77,7 +76,7 @@ class Database
     * @method getDriver
     * @return boolean
     */
-	public function getDriver()
+	public function getDriver ()
 	{
 		if (!$this->db_instance ) {
 			// Language to be included
@@ -96,13 +95,51 @@ class Database
     * Select values from db using relevant driver
     *
     * @method select
-    * @return object etc. mysqli object after connection
+    * @param string $table
+    * @param array $selecFields e.g. ['id', 'name']
+    * @param array $where e.g. ['id' => ['=', '123']]
+    * @param array $orderby e.g. ['id' => 'ASC', 'name' => 'DESC']
+    * @return array $result result of select statement
     */
-	public function select($table, $selecFields, $where = [], $orderby = [])
+	public function select ($table, $selecFields, $where = [], $orderby = [])
 	{
+		if (!$this->pdo) {
+			$this->connect();
+		}
 		$select = $this->driver->select($table, $selecFields, $where, $orderby);
 		$stmt = $this->pdo->prepare($select);
-		$stmt->execute($where);
+		foreach ($where as $key => $value) {
+			$pdo_vals = [$key => $value[1]];
+		}
+		$stmt->execute($pdo_vals);
+		$result = $stmt->fetch();
+		echo( print_r($result, 1));
+		return $result;
+	}
+
+    /**
+    * Create a new record in db using relevant driver
+    *
+    * @method insert
+    * @return object etc. mysqli object after connection
+    */
+	public function insert ($table, $values, $fields = [])
+	{
+		if (empty($values)) {
+			// Language to be included
+			throw new \Exception("Nothing to insert", 1);
+		}
+		if (!$this->pdo) {
+			$this->connect();
+		}
+		$insert = $this->driver->insert($table, count($values), $fields);
+		foreach ($values as $value)
+		{
+			$stmt->execute([$name]);
+		}
+		$pdo->commit();
+		$stmt = $this->pdo->prepare($insert);
+		$stmt->execute($pdo_vals);
 		$user = $stmt->fetch();
 		echo( print_r($user, 1));
 	}
