@@ -21,9 +21,9 @@ class MysqlDriver
     * @param string $pass password
     * @param string $port
     * @param string $charset
-    * @return PDO object
+    * @return object $pdo PDO object
     */
-	public function connect( $host, $db, $user, $pass, $port = "3306", $charset= "utf8mb4") {
+	public function connect ( $host, $db, $user, $pass, $port = "3306", $charset= "utf8mb4") {
 		$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
 		$options = [
 		    \PDO::ATTR_ERRMODE            => \PDO::ERRMODE_EXCEPTION,
@@ -31,32 +31,67 @@ class MysqlDriver
 		    \PDO::ATTR_EMULATE_PREPARES   => false,
 		];
 		try {
-		     $pdo = new \PDO($dsn, $user, $pass, $options);
+		    $pdo = new \PDO($dsn, $user, $pass, $options);
+			return $pdo;
 		} catch (\PDOException $e) {
-		     throw new \PDOException($e->getMessage(), (int)$e->getCode());
+		    throw new \PDOException($e->getMessage(), (int)$e->getCode());
 		}
 	}
 
 
     /**
-    * Prepare a select statement and return it
+    * Prepare a where clause
+    *
+    * @method prepareWhereClause
+    * @param array $where e.g. ['id' => ['in', [1,2,3] ], 'name' => ['=', "mark" ] ] will give "WHERE id IN (???) AND name = ?"
+    * @return string $query where statement
+    */
+	public function prepareWhereClause ($where = [])
+	{
+		$query = "WHERE ";
+
+		$i = 0;
+		$numItems = count($where);
+		foreach ($where as $key => $value) {
+
+			$questionmarks = is_array($value[1]) ? str_repeat("?,", count($value[1])-1) . "?" : "?";
+
+			if($numItems != 1 && ++$i === $numItems)
+				$query .= "AND ";
+
+			if ( $value[0] == "<>" || $value[0] == "!=" || strtolower($value[0]) == "not in" )
+				$query .= "$key NOT IN ($questionmarks) ";
+			elseif ($value[0] == "=" || strtolower($value[0]) == "in" )
+				$query .= "$key IN ($questionmarks) ";
+			else
+				$query .= "$key $value[0] ? "; // e.g. id = :id
+		}
+		echo "$query <br>\n";
+		return $query;
+	}
+    /**
+    * Prepare a select statement and return it as a string
     *
     * @method select
     * @param string $table
     * @param array $selecFields e.g. ['id', 'name']
     * @param array $where e.g. ['id' => ['=', '123']]
     * @param array $orderby e.g. ['id' => 'ASC', 'name' => 'DESC']
-    * @return string select statement
+    * @return string $query select statement
     */
-	public function select($table, $selecFields, $where = [], $orderby = [])
+	public function select ($table, $selecFields, $where = [], $orderby = [])
 	{
-		$query = 'SELECT ';
-		$query .= ( is_array($selecFields) && isset($selecFields) && !empty($selecFields) ) ? implode(', ', $selecFields) . ' ' : '* ';
+		return $this->prepareWhereClause($where);
+		$query = "SELECT ";
+		$query .= ( is_array($selecFields) && !empty($selecFields) ) ? implode(', ', $selecFields) . ' ' : '* ';
 		$query .= "FROM $table WHERE ";
 
 		$i = 0;
 		$numItems = count($where);
 		foreach ($where as $key => $value) {
+			if ($value[0] == "!=" || $value[0] == "<>" ) {
+				$operator = "NOT IN ";
+			}
 			if($numItems != 1 && ++$i === $numItems)
 				$query .= "AND $key=:$key ";
 			else
@@ -73,7 +108,31 @@ class MysqlDriver
 					$query .= "$key $value, ";
 			}
 		}
-		echo $query;
+		echo $query . " <br>\n";
+		return $query;
+	}
+
+    /**
+    * Prepare a insert statement and return it
+    *
+    * @method insert
+    * @param string $table
+    * @param array $values number of values to be inserted
+    * @param array $fields e.g. ['id', 'name']
+    * @return string $query insert statement
+    */
+	public function insert ($table, $numValues, $fields = [])
+	{
+		$query = "INSERT INTO $table ";
+		$query .= ( is_array($fields) && !empty($fields) ) ? "(" . implode(', ', $fields) . ") " : "";
+		$query .= "VALUES (";
+		$i = 0;
+		while ($i < $numValues-1) {
+			$query .= "?,";
+			$i++;
+		}
+		$query .= "?) ";
+		echo $query . " <br>\n";
 		return $query;
 	}
 }
