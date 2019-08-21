@@ -108,14 +108,45 @@ class Database
 		}
 		$select = $this->driver->select($table, $selecFields, $where, $orderby);
 		$stmt = $this->pdo->prepare($select);
-		foreach ($where as $key => $value) {
-			$pdo_vals = [$key => $value[1]];
+		$data = $this->getWhereData($where);
+		foreach ($data as $value) {
+			// $pdo_vals = [$key => $value[1]];
+		echo( print_r($value, 1)) . "<br>";
+			if (is_array($value)) {
+				foreach ($value as $val) {
+				$stmt->execute($val);
+					# code...
+				}
+			}
+			else
+				$stmt->execute($value);
 		}
-		$stmt->execute($pdo_vals);
 		$result = $stmt->fetch();
 		echo( print_r($result, 1));
 		return $result;
 	}
+
+    public function getWhereData($where)
+    {
+        $whereData = null;
+        if (count($where) > 0) {
+            $whereData = [];
+            $size = count($where);
+            foreach ($where as $key => $value) {
+                //if its a logical operator
+                if ( (--$size)%2 != 0 )
+                    continue;
+				// if (is_array($value[1]))
+				// 	foreach ($value[1] as $val)
+	   //              	$whereData[] = $val;
+	   //          else
+            		$whereData[] = $value[1];
+            }
+        }
+		echo( print_r($whereData, 1)) . "<br>";
+
+        return $whereData;
+    }
 
     /**
     * Create a new record in db using relevant driver
@@ -133,14 +164,12 @@ class Database
 			$this->connect();
 		}
 		$insert = $this->driver->insert($table, count($values), $fields);
-		foreach ($values as $value)
-		{
-			$stmt->execute([$name]);
-		}
-		$pdo->commit();
+		// foreach ($values as $value)
+		// {
+		// 	$stmt->execute([$name]);
+		// }
 		$stmt = $this->pdo->prepare($insert);
-		$stmt->execute($pdo_vals);
-		$user = $stmt->fetch();
-		echo( print_r($user, 1));
+		$stmt->execute($values);
+		$this->pdo->commit();
 	}
 }
