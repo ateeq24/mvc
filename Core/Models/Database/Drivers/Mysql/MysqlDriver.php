@@ -40,6 +40,55 @@ class MysqlDriver
 
 
     /**
+    * Prepare a where clause
+    *
+    * @method prepareWhereClause
+    * @param array $where e.g. ['id' => ['in', [1,2,3] ], 'name' => ['=', "mark" ] ] will give "WHERE id IN (???) AND name = ?"
+    * @return string $query where statement
+    */
+	public function prepareWhereClause ($where = [])
+	{
+		$query = "WHERE ";
+		foreach ($where as $key => $value) {
+			$questionmarks = is_array($value[1]) ? str_repeat("?,", count($value[1])-1) . "?" : "?";
+			if (is_string($value) && trim(strtolower($value)) == "and")
+				$query .= "AND ";
+			elseif (is_string($value) && trim(strtolower($value)) == "or")
+				$query .= "OR ";
+			elseif ( $value[0] == "<>" || $value[0] == "!=" || strtolower($value[0]) == "not in" )
+				$query .= "$key NOT IN ($questionmarks) ";
+			elseif ($value[0] == "=" || strtolower($value[0]) == "in" )
+				$query .= "$key IN ($questionmarks) ";
+			else
+				$query .= "$key $value[0] ? "; // e.g. id = ?
+		}
+		return $query;
+	}
+
+    /**
+    * Prepare ORDER BY clause
+    *
+    * @method prepareOrderByClause
+	* @param array $orderby e.g. ['id' => 'ASC', 'name' => 'DESC'] will give "ORDER BY id ASC, name DESC
+    * @return string $query order by statement
+    */
+	public function prepareOrderByClause ($orderby = [])
+	{
+		if (!empty($orderby)) {
+			$query = "ORDER BY ";
+			$i = 0;
+			$numItems = count($orderby);
+			foreach ($orderby as $key => $value) {
+				if(++$i === $numItems)
+					$query .= "$key $value ";
+				else
+					$query .= "$key $value, ";
+			}
+		}
+		return $query;
+	}
+
+    /**
     * Prepare a select statement and return it as a string
     *
     * @method select
@@ -53,27 +102,11 @@ class MysqlDriver
 	{
 		$query = "SELECT ";
 		$query .= ( is_array($selecFields) && !empty($selecFields) ) ? implode(', ', $selecFields) . ' ' : '* ';
-		$query .= "FROM $table WHERE ";
+		$query .= "FROM $table ";
 
-		$i = 0;
-		$numItems = count($where);
-		foreach ($where as $key => $value) {
-			if($numItems != 1 && ++$i === $numItems)
-				$query .= "AND $key=:$key ";
-			else
-				$query .= "$key " . $value[0] . " :$key "; // e.g. id = :id
-		}
-		if (!empty($orderby)) {
-			$query .= "ORDER BY ";
-			$i = 0;
-			$numItems = count($orderby);
-			foreach ($orderby as $key => $value) {
-				if(++$i === $numItems)
-					$query .= "$key $value ";
-				else
-					$query .= "$key $value, ";
-			}
-		}
+		$query .= !empty($where) ? $this->prepareWhereClause($where) : "";
+		$query .= !empty($orderby) ? $this->prepareOrderByClause($orderby) : "";
+
 		echo $query . " <br>\n";
 		return $query;
 	}
@@ -90,7 +123,7 @@ class MysqlDriver
 	public function insert ($table, $numValues, $fields = [])
 	{
 		$query = "INSERT INTO $table ";
-		$query .= ( is_array($fields) && !empty($fields) ) ? "(" implode(', ', $fields) . ") " : "";
+		$query .= ( is_array($fields) && !empty($fields) ) ? "(" . implode(', ', $fields) . ") " : "";
 		$query .= "VALUES (";
 		$i = 0;
 		while ($i < $numValues-1) {

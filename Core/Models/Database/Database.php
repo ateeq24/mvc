@@ -108,14 +108,41 @@ class Database
 		}
 		$select = $this->driver->select($table, $selecFields, $where, $orderby);
 		$stmt = $this->pdo->prepare($select);
-		foreach ($where as $key => $value) {
-			$pdo_vals = [$key => $value[1]];
-		}
-		$stmt->execute($pdo_vals);
-		$result = $stmt->fetch();
-		echo( print_r($result, 1));
+		$data = $this->getPlaceholderData($where);
+		$stmt->execute($data);
+		$result = $stmt->fetchAll();
 		return $result;
 	}
+
+    /**
+    * Select values from db using relevant driver
+    *
+    * @method getPlaceholderData
+    * @param array $phData placeholder data
+    * @example ["id" => ["in", [1,2,3] ], "OR", "name" => ["LIKE", "%mark%" ] ]
+    * @return array $result result of select statement
+    */
+    public function getPlaceholderData($phData)
+    {
+
+        $data = null;
+        if (count($phData) > 0) {
+            $data = [];
+            $size = count($phData);
+            foreach ($phData as $key => $value) {
+                //if its a logical operator
+                if ( (--$size)%2 != 0 )
+                    continue;
+				if (is_array($value[1]))
+					foreach ($value[1] as $val)
+	                	$data[] = $val;
+	            else
+            		$data[] = $value[1];
+            }
+        }
+
+        return $data;
+    }
 
     /**
     * Create a new record in db using relevant driver
@@ -133,14 +160,7 @@ class Database
 			$this->connect();
 		}
 		$insert = $this->driver->insert($table, count($values), $fields);
-		foreach ($values as $value)
-		{
-			$stmt->execute([$name]);
-		}
-		$pdo->commit();
 		$stmt = $this->pdo->prepare($insert);
-		$stmt->execute($pdo_vals);
-		$user = $stmt->fetch();
-		echo( print_r($user, 1));
+		$stmt->execute($values);
 	}
 }
