@@ -110,7 +110,6 @@ class Database
 			$select = $this->driver->select($table, $selecFields, $where, $orderby);
 			$stmt = $this->pdo->prepare($select);
 			$data = $this->getPlaceholderData($where);
-			echo print_r($data);
 			$stmt->execute($data);
 			$result = $stmt->fetchAll();
 			return $result;
@@ -198,6 +197,32 @@ class Database
 			$update = $this->driver->update($table, $updateFields, $where);
 			$stmt = $this->pdo->prepare($update);
 			$data = array_merge($data, $this->getPlaceholderData($where) );
+			$stmt->execute($data);
+			return true;
+		} catch (\Exception $e) {
+			// Language to be included
+			echo "Exception Occured: ";
+			var_dump($e);
+		}
+	}
+
+    /**
+    * Delete rows from table
+    *
+    * @method delete
+    * @param string $table
+    * @param array $where e.g. ['id' => ['=', '123']]
+    * @return bool whether deletion is successful
+    */
+	public function delete ($table, $where = [])
+	{
+		if (!$this->pdo || !$this->driver) {
+			$this->connect();
+		}
+		try {
+			$delete = $this->driver->delete($table, $where);
+			$stmt = $this->pdo->prepare($delete);
+			$data = $this->getPlaceholderData($where);
 			$stmt->execute($data);
 			return true;
 		} catch (\Exception $e) {

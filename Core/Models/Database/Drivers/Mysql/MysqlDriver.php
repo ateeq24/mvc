@@ -143,7 +143,7 @@ class MysqlDriver
 	}
 
     /**
-    * Prepare a update statement and return it as a string, data is not required here
+    * Prepare an update statement and return it as a string, data is not required here
     *
     * @method update
     * @param string $table
@@ -153,8 +153,6 @@ class MysqlDriver
     */
 	public function update ($table, $updateFields, $where = [])
 	{
-		// UPDATE `members` SET `full_names` = ?, `physical_address` = 'Melrose 123' WHERE `membership_number` = 2;
-
 		$query = "UPDATE `$table` SET ";
 		if (!is_array($updateFields) || empty($updateFields)) {
 			throw new Exception("A valid array of fields is reuired to update...", 1);
@@ -165,6 +163,23 @@ class MysqlDriver
 			$i++;
 		}
 		$query .= "`" . $updateFields[$i] . "`=? ";
+		$query .= !empty($where) ? $this->prepareWhereClause($where) : "";
+		echo $query . " <br>\n";
+		return $query;
+	}
+
+    /**
+    * Prepare a delete statement and return it as a string
+    *
+    * @method delete
+    * @param string $table
+    * @param array $where e.g. ['id' => ['=', '123']]
+    * @return string $query delete statement
+    */
+	public function delete ($table, $where = [])
+	{
+		$query = "DELETE FROM `$table` ";
+		echo print_r($where, 1);
 		$query .= !empty($where) ? $this->prepareWhereClause($where) : "";
 		echo $query . " <br>\n";
 		return $query;

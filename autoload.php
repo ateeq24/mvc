@@ -47,7 +47,6 @@ function load ($class) {
     }
 };
 
-echo 'MVC - Initating Autoloader' . "<br>\n";
 $classes = array(
   'MVC\App\Controllers\StudentController',
   'MVC\App\Model\StudentModel',
@@ -73,4 +72,3 @@ $classes = array(
 foreach ($classes as $class) {
   load($class);
 }
-echo 'RT MVC - Autoloader Completed' . "<br>\n";
