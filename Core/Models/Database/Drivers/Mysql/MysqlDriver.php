@@ -56,11 +56,11 @@ class MysqlDriver
 			elseif (is_string($value) && trim(strtolower($value)) == "or")
 				$query .= "OR ";
 			elseif ( $value[0] == "<>" || $value[0] == "!=" || strtolower($value[0]) == "not in" )
-				$query .= "$key NOT IN ($questionmarks) ";
+				$query .= "`$key` NOT IN ($questionmarks) ";
 			elseif ($value[0] == "=" || strtolower($value[0]) == "in" )
-				$query .= "$key IN ($questionmarks) ";
+				$query .= "`$key` IN ($questionmarks) ";
 			else
-				$query .= "$key $value[0] ? "; // e.g. id = ?
+				$query .= "`$key` $value[0] ? "; // e.g. id = ?
 		}
 		return $query;
 	}
@@ -80,9 +80,9 @@ class MysqlDriver
 			$numItems = count($orderby);
 			foreach ($orderby as $key => $value) {
 				if(++$i === $numItems)
-					$query .= "$key $value ";
+					$query .= "`$key` $value ";
 				else
-					$query .= "$key $value, ";
+					$query .= "`$key` $value, ";
 			}
 		}
 		return $query;
@@ -93,20 +93,27 @@ class MysqlDriver
     *
     * @method select
     * @param string $table
-    * @param array $selecFields e.g. ['id', 'name']
+    * @param array $selectFields e.g. ['id', 'name']
     * @param array $where e.g. ['id' => ['=', '123']]
     * @param array $orderby e.g. ['id' => 'ASC', 'name' => 'DESC']
     * @return string $query select statement
     */
-	public function select ($table, $selecFields, $where = [], $orderby = [])
+	public function select ($table, $selectFields, $where = [], $orderby = [])
 	{
 		$query = "SELECT ";
-		$query .= ( is_array($selecFields) && !empty($selecFields) ) ? implode(', ', $selecFields) . ' ' : '* ';
-		$query .= "FROM $table ";
-
+		if (is_array($selectFields) && !empty($selectFields)) {
+			$i = 0;
+			while ($i < count($selectFields)-1) {
+				$query .= "`" . $selectFields[$i] . "`, ";
+				$i++;
+			}
+			$query .= "`" . $selectFields[$i] . "` ";
+		}
+		else
+			$query .= '* ';
+		$query .= "FROM `$table` ";
 		$query .= !empty($where) ? $this->prepareWhereClause($where) : "";
 		$query .= !empty($orderby) ? $this->prepareOrderByClause($orderby) : "";
-
 		echo $query . " <br>\n";
 		return $query;
 	}
@@ -122,7 +129,7 @@ class MysqlDriver
     */
 	public function insert ($table, $numValues, $fields = [])
 	{
-		$query = "INSERT INTO $table ";
+		$query = "INSERT INTO `$table` ";
 		$query .= ( is_array($fields) && !empty($fields) ) ? "(" . implode(', ', $fields) . ") " : "";
 		$query .= "VALUES (";
 		$i = 0;
@@ -131,6 +138,34 @@ class MysqlDriver
 			$i++;
 		}
 		$query .= "?) ";
+		echo $query . " <br>\n";
+		return $query;
+	}
+
+    /**
+    * Prepare a update statement and return it as a string, data is not required here
+    *
+    * @method update
+    * @param string $table
+    * @param array $updateFields e.g. ['id', 'name']
+    * @param array $where e.g. ['id' => ['=', '123']]
+    * @return string $query update statement
+    */
+	public function update ($table, $updateFields, $where = [])
+	{
+		// UPDATE `members` SET `full_names` = ?, `physical_address` = 'Melrose 123' WHERE `membership_number` = 2;
+
+		$query = "UPDATE `$table` SET ";
+		if (!is_array($updateFields) || empty($updateFields)) {
+			throw new Exception("A valid array of fields is reuired to update...", 1);
+		}
+		$i = 0;
+		while ($i < count($updateFields)-1) {
+			$query .= "`" . $updateFields[$i] . "`=?, ";
+			$i++;
+		}
+		$query .= "`" . $updateFields[$i] . "`=? ";
+		$query .= !empty($where) ? $this->prepareWhereClause($where) : "";
 		echo $query . " <br>\n";
 		return $query;
 	}

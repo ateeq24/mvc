@@ -103,73 +103,107 @@ class Database
     */
 	public function select ($table, $selecFields, $where = [], $orderby = [])
 	{
-		if (!$this->pdo) {
+		if (!$this->pdo || !$this->driver) {
 			$this->connect();
 		}
-		$select = $this->driver->select($table, $selecFields, $where, $orderby);
-		$stmt = $this->pdo->prepare($select);
-		$data = $this->getWhereData($where);
-		foreach ($data as $value) {
-			// $pdo_vals = [$key => $value[1]];
-		echo( print_r($value, 1)) . "<br>";
-			if (is_array($value)) {
-				foreach ($value as $val) {
-				$stmt->execute($val);
-					# code...
-				}
-			}
-			else
-				$stmt->execute($value);
+		try {
+			$select = $this->driver->select($table, $selecFields, $where, $orderby);
+			$stmt = $this->pdo->prepare($select);
+			$data = $this->getPlaceholderData($where);
+			echo print_r($data);
+			$stmt->execute($data);
+			$result = $stmt->fetchAll();
+			return $result;
+		} catch (\Exception $e) {
+			// Language to be included
+			echo "Exception Occured: ";
+			var_dump($e);
 		}
-		$result = $stmt->fetch();
-		echo( print_r($result, 1));
-		return $result;
+
 	}
 
-    public function getWhereData($where)
+    /**
+    * Select values from db using relevant driver
+    *
+    * @method getPlaceholderData
+    * @param array $phData placeholder data
+    * @example ["id" => ["in", [1,2,3] ], "OR", "name" => ["LIKE", "%mark%" ] ]
+    * @return array $result result of select statement
+    */
+    public function getPlaceholderData($phData)
     {
-        $whereData = null;
-        if (count($where) > 0) {
-            $whereData = [];
-            $size = count($where);
-            foreach ($where as $key => $value) {
+
+        $data = null;
+        if (count($phData) > 0) {
+            $data = [];
+            $size = count($phData);
+            foreach ($phData as $key => $value) {
                 //if its a logical operator
                 if ( (--$size)%2 != 0 )
                     continue;
-				// if (is_array($value[1]))
-				// 	foreach ($value[1] as $val)
-	   //              	$whereData[] = $val;
-	   //          else
-            		$whereData[] = $value[1];
+				if (is_array($value[1]))
+					foreach ($value[1] as $val)
+	                	$data[] = $val;
+	            else
+            		$data[] = $value[1];
             }
         }
-		echo( print_r($whereData, 1)) . "<br>";
 
-        return $whereData;
+        return $data;
     }
 
     /**
     * Create a new record in db using relevant driver
     *
     * @method insert
-    * @return object etc. mysqli object after connection
+    * @return boolean whether insertion is successful
     */
 	public function insert ($table, $values, $fields = [])
 	{
 		if (empty($values)) {
 			// Language to be included
-			throw new \Exception("Nothing to insert", 1);
+			throw new \Exception("Nothing to insert...", 1);
 		}
-		if (!$this->pdo) {
+		if (!$this->pdo || !$this->driver) {
 			$this->connect();
 		}
-		$insert = $this->driver->insert($table, count($values), $fields);
-		// foreach ($values as $value)
-		// {
-		// 	$stmt->execute([$name]);
-		// }
-		$stmt = $this->pdo->prepare($insert);
-		$stmt->execute($values);
-		$this->pdo->commit();
+		try {
+			$insert = $this->driver->insert($table, count($values), $fields);
+			$stmt = $this->pdo->prepare($insert);
+			$stmt->execute($values);
+			return true;
+		} catch (\Exception $e) {
+			// Language to be included
+			echo "Exception Occured: ";
+			var_dump($e);
+		}
+	}
+
+    /**
+    * Update values in db using relevant driver
+    *
+    * @method update
+    * @param string $table
+    * @param array $updateFields e.g. ['id', 'name']
+    * @param array $data e.g. ['123', 'Mark']
+    * @param array $where e.g. ['id' => ['=', '123']]
+    * @return bool whether update is successful
+    */
+	public function update ($table, $updateFields, $data, $where = [])
+	{
+		if (!$this->pdo || !$this->driver) {
+			$this->connect();
+		}
+		try {
+			$update = $this->driver->update($table, $updateFields, $where);
+			$stmt = $this->pdo->prepare($update);
+			$data = array_merge($data, $this->getPlaceholderData($where) );
+			$stmt->execute($data);
+			return true;
+		} catch (\Exception $e) {
+			// Language to be included
+			echo "Exception Occured: ";
+			var_dump($e);
+		}
 	}
 }
