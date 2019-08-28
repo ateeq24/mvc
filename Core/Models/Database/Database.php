@@ -10,35 +10,22 @@ use \Exception;
 */
 class Database
 {
-	/**
-	 * e.g. mysql, pgsql
-	 */
-	private $db_instance;
 
-	/**
-	 * e.g. database name
-	 */
-	private $db_name;
-
-	/**
-	 * e.g. localhost
-	 */
-	private $host;
+	private $db_instance; 	// e.g. mysql, pgsql
+	private $db_name; 		// e.g. database name
+	private $host;			// e.g. localhost
     private $user;
     private $pass;
     private $port;
-
 	/**
 	 * Driver class according to config.php
 	 */
-
     private $driver;
 	/**
 	 * PDO object which will be set by calling relevant driver
 	 */
     private $pdo;
     private $charset;
-
 
 	/**
 	 * Constructor

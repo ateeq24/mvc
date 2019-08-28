@@ -58,6 +58,8 @@ $classes = array(
   'MVC\App\Views\Student\Edit',
   'MVC\App\Views\Student\List',
   'MVC\Core\Request',
+  'MVC\Core\Utils',
+  'MVC\Core\Router',
   'MVC\Core\Controllers\BaseController',
   'MVC\Core\Controllers\ControllerFactory',
   'MVC\Core\Controllers\ControllerInterface',
