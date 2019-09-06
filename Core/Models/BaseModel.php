@@ -1,20 +1,38 @@
 <?php
 namespace MVC\Core\Models;
 
+/**
+ * BaseModel from which application classes (e.g. student) can inherit from
+ *
+ * Functions are intentionally given odd names 
+ * to differentiate from DB functions
+ * I believe this will pose banana-gorilla problem in the future
+ *
+*/
 class BaseModel
 {
+	$table;
 
 	function __construct()
 	{
-		$database = new Database();
+		$this->database = new Database();
+		$this->table = "base";
 	}
 
-	public function delete ($where = []) {
+	public function erase ($where = []) {
 		$this->database->delete($this->table, $where );
 	}
-$database->insert("students", ["t-hanks", "hanks@abc.com"], ["name", "email"]);
 
-$update = $database->update("students", ["email"], ["mark@shah.com"], ["id" => ["in", [1] ], "OR", "email" => ["LIKE", "%abcd.com%" ] ] );
-$select = $database->select("students", ["id", "name", "email"], ["id" => ["in", [1,2,3] ], "OR", "name" => ["LIKE", "%ai%" ] ], ["id" => "ASC", "email" => "ASC", "name" => "DESC"]);
-echo print_r($select, 1);
+	public function add ($data, $columns = []) {
+		$this->database->insert($this->table, $data, $columns);
+	}
+
+	public function revise ($columns, $data, $where = [] ) {
+		$this->database->update($this->table, $columns, $data, $where );
+	}
+
+	public function fetch ($columns, $where = [], $order = [] ) {
+		$select = $this->database->select($this->table, $columns, $where, $order);
+		return $select;
+	}
 }
